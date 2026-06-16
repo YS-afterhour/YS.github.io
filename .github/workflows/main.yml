@@ -1,4 +1,4 @@
-name: 每日日期與天氣自動更新 🤖☀️
+name: 每日日期天氣與幽默金句自動更新 🤖☀️
 
 # 設定觸發條件：1. 每天台灣時間早上 7:00 (UTC 23:00) 自動執行 / 2. 允許手動點擊觸發
 on:
@@ -16,10 +16,9 @@ jobs:
     - name: 檢查並載入程式碼 📂
       uses: actions/checkout@v4
 
-    - name: 抓取最新日期與新竹天氣狀態 🌐
+    - name: 抓取最新資訊與生成內容 🌐
       run: |
         # 1. 計算台灣時間的日期與星期幾
-        # 定義星期幾的中文對照
         WEEKDAY_NUM=$(date -u -d '+8 hours' '+%u')
         WEEKDAYS=( "" "星期一" "星期二" "星期三" "星期四" "星期五" "星期六" "星期日" )
         CHINESE_WEEKDAY=${WEEKDAYS[$WEEKDAY_NUM]}
@@ -27,17 +26,30 @@ jobs:
         CURRENT_DATE=$(date -u -d '+8 hours' '+%Y 年 %m 月 %d 日')
         UPDATE_TIME=$(date -u -d '+8 hours' '+%H:%M:%S')
 
-        # 2. 向免費天氣 API 請求新竹當前的天氣狀態 (使用 wttr.in 服務)
-        # format=3 會直接回傳簡單的文字與天氣 icon，例如 "Hsinchu: ⛅️ +27°C"
+        # 2. 向免費天氣 API 請求新竹當前的天氣狀態 (會自動帶有 °C 度C)
         WEATHER_INFO=$(curl -s "https://wttr.in/Hsinchu?format=3&lang=zh-tw")
-        
-        # 如果 API 暫時沒回應，設定防錯機制
         if [ -z "$WEATHER_INFO" ]; then
           WEATHER_INFO="無法取得即時天氣資料 🌁"
         fi
 
-        # 3. 將資料寫入獨立的資訊分頁（dashboard.md）
-        echo "# 📋 我的每日生活看板" > dashboard.md
+        # 3. 建立一個幽默語錄庫，讓機器人每天隨機抽一句
+        FUNNY_QUOTES=(
+          "工作像是一場大型的『密室逃脫』，只是你每天都要回來逃一次。🚪"
+          "錢不是萬能的，有時候是萬幸的。上班是為了下班，下班是為了活著！💪"
+          "只要你肯努力，沒有什麼工作是搞不砸的... 開玩笑的，祝今天一切順利！🚀"
+          "今天又是充滿希望的一天！如果覺得累了，就摸摸口袋，喔...沒錢，那繼續工作吧。🥹"
+          "世界上最遙遠的距離，是星期一到星期五；最短的距離，是星期五到星期一。⏳"
+          "程式碼如果不聽話，重開機就對了；如果生活有點累...那就先喝杯熱咖啡。☕"
+          "今天也是個稱職的『薪水小偷』預備軍呢！按時打卡，平安回家。💼"
+          "只要今天把工作做完，明天的你就會感謝今天的你（雖然明天的你還是要上班）。🎒"
+        )
+        
+        # 隨機抽籤
+        RANDOM_INDEX=$(( RANDOM % ${#FUNNY_QUOTES[@]} ))
+        SELECTED_QUOTE=${FUNNY_QUOTES[$RANDOM_INDEX]}
+
+        # 4. 將資料寫入生活看板檔案（dashboard.md）
+        echo "# 📋 我的每日生活與充電看板" > dashboard.md
         echo "" >> dashboard.md
         echo "歡迎來到我的自動化生活看板！這裡的資訊是由 **GitHub Actions 機器人** 每天早上自動為我更新的。🚀" >> dashboard.md
         echo "" >> dashboard.md
@@ -45,8 +57,11 @@ jobs:
         echo "* **今天是：** $CURRENT_DATE" >> dashboard.md
         echo "* **星期幾：** $CHINESE_WEEKDAY" >> dashboard.md
         echo "" >> dashboard.md
-        echo "### ☀️ 即時天氣狀態 (新竹)" >> dashboard.md
-        echo "> **$WEATHER_INFO** 🌡️" >> dashboard.md
+        echo "### ☀️ 即時天氣與溫度 (新竹)" >> dashboard.md
+        echo "> **$WEATHER_INFO** 🌡️ *(已整合即時度C)*" >> dashboard.md
+        echo "" >> dashboard.md
+        echo "### 💡 今日工作提神劑（隨機幽默語錄）" >> dashboard.md
+        echo "> **「$SELECTED_QUOTE」** 😂" >> dashboard.md
         echo "" >> dashboard.md
         echo "---" >> dashboard.md
         echo "*🤖 機器人最後工作時間：$UPDATE_TIME (台灣時間)*" >> dashboard.md
@@ -56,5 +71,5 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action Bot"
         git add dashboard.md
-        git commit -m "🤖 自動更新今日日期與新竹天氣 [skip ci]" || echo "沒有新變更"
+        git commit -m "🤖 自動更新今日日期、新竹溫度度C與幽默金句 [skip ci]" || echo "沒有新變更"
         git push
