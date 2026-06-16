@@ -16,7 +16,7 @@ jobs:
     - name: 檢查並載入程式碼 📂
       uses: actions/checkout@v4
 
-    - name: 抓取最新日期與台北天氣狀態 🌐
+    - name: 抓取最新日期與新竹天氣狀態 🌐
       run: |
         # 1. 計算台灣時間的日期與星期幾
         # 定義星期幾的中文對照
@@ -27,16 +27,16 @@ jobs:
         CURRENT_DATE=$(date -u -d '+8 hours' '+%Y 年 %m 月 %d 日')
         UPDATE_TIME=$(date -u -d '+8 hours' '+%H:%M:%S')
 
-        # 2. 向免費天氣 API 請求台北當前的天氣狀態 (使用 wttr.in 服務)
-        # format=3 會直接回傳簡單的文字與天氣 icon，例如 "Taipei: ⛅️ +27°C"
-        WEATHER_INFO=$(curl -s "https://wttr.in/Taipei?format=3&lang=zh-tw")
+        # 2. 向免費天氣 API 請求新竹當前的天氣狀態 (使用 wttr.in 服務)
+        # format=3 會直接回傳簡單的文字與天氣 icon，例如 "Hsinchu: ⛅️ +27°C"
+        WEATHER_INFO=$(curl -s "https://wttr.in/Hsinchu?format=3&lang=zh-tw")
         
         # 如果 API 暫時沒回應，設定防錯機制
         if [ -z "$WEATHER_INFO" ]; then
           WEATHER_INFO="無法取得即時天氣資料 🌁"
         fi
 
-        # 3. 將資料寫入獨立的資訊分頁（例如：dashboard.md）
+        # 3. 將資料寫入獨立的資訊分頁（dashboard.md）
         echo "# 📋 我的每日生活看板" > dashboard.md
         echo "" >> dashboard.md
         echo "歡迎來到我的自動化生活看板！這裡的資訊是由 **GitHub Actions 機器人** 每天早上自動為我更新的。🚀" >> dashboard.md
@@ -45,7 +45,7 @@ jobs:
         echo "* **今天是：** $CURRENT_DATE" >> dashboard.md
         echo "* **星期幾：** $CHINESE_WEEKDAY" >> dashboard.md
         echo "" >> dashboard.md
-        echo "### ☀️ 即時天氣狀態 (台北)" >> dashboard.md
+        echo "### ☀️ 即時天氣狀態 (新竹)" >> dashboard.md
         echo "> **$WEATHER_INFO** 🌡️" >> dashboard.md
         echo "" >> dashboard.md
         echo "---" >> dashboard.md
@@ -56,5 +56,5 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action Bot"
         git add dashboard.md
-        git commit -m "🤖 自動更新今日日期與天氣 [skip ci]" || echo "沒有新變更"
+        git commit -m "🤖 自動更新今日日期與新竹天氣 [skip ci]" || echo "沒有新變更"
         git push
